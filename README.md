@@ -7,6 +7,15 @@ The app is deployed via [Posit Connect](https://posit.co/products/enterprise/con
 
 ## Installation / Setup
 
+### Databricks Setup
+
+- When creating a DataBricks compute cluster, make sure to select the `ML Runtime` option
+and version `14.1`.
+  - Later versions can be supposed, but the matching python package
+needs to be published on PyPI first: <https://pypi.org/project/databricks-connect/>
+- The runtime and version will be automatically picked up by the `pysparklyr` package,
+  when you specify the `cluster_id` in the `install_databricks()` function.
+
 ### Environment variables with `.Renviron`
 
 In a project `.Renviorn` or system `.Renviron` file,
@@ -24,6 +33,8 @@ cluster IDs.
 
 ### Package Setup
 
+You can install all the necessary packages with the following commands.
+
 ```r
 remotes::install_github("mlverse/pysparklyr")
 pysparklyr::install_databricks(cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"))
@@ -31,7 +42,8 @@ pysparklyr::install_databricks(cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"))
 
 #### Package Setup ARM Macs
 
-You need to make sure Python `3.11.x` is installed on your system and point to that version before installing
+If you are using an ARM mac,
+you need to make sure Python `3.11.x` is installed on your system and point to that version before installing
 `pysparklyr::install_databricks()`.
 This is because the python `torch` package is not compatiable on ARM Macs in any other Python version (at time of writing).
 
