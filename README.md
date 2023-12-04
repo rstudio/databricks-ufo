@@ -9,7 +9,7 @@ The app is deployed via [Posit Connect](https://posit.co/products/enterprise/con
 
 ### Environment variables with `.Renviron`
 
-In a project `.Renviorn` or system `.Renviron` file,
+In a project `.Renviron` or system `.Renviron` file,
 define the following 3 variables:
 
 ```
