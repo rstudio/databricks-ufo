@@ -1,21 +1,21 @@
-# DataBricks UFO Quarto Dashboard and Shiny App
+# Databricks UFO Quarto Dashboard and Shiny App
 
-This repository houses is a
+This repository houses a
 [Quarto Dashboard](https://quarto.org/docs/dashboards/)
 and
-[Shiny Application](https://shiny.posit.co/)
-deployed on [Posit Connect](https://posit.co/products/enterprise/connect/)
-that allows you to explore the [National UFO Reporting Center](http://www.nuforc.org/) database
-hosted on a [Databricks](https://databricks.com/) cluster.
+[Shiny Application](https://shiny.posit.co/),
+deployed on [Posit Connect](https://posit.co/products/enterprise/connect/),
+that explore the [National UFO Reporting Center](http://www.nuforc.org/) database, which is
+hosted on a [Databricks](https://databricks.com/) cluster. These artifacts demo how you can use Posit tools alongside Databricks to create an end-to-end workflow, from accessing data on Databricks, to analyzing it in Posit Workbench, to deploying the resulting data products to Posit Connect.
 
 ## Installation / Setup
 
-There are 4 main parts to getting everything set up:
+To build these apps, you must set up four components:
 
-1. Databricks catalog: where the UFO data is stored
-2. Databricks compute: Using Databricks runtime version 14.1 ML
-3. R environment and package set up
-4. Python environment and package set up
+1. Databricks catalog, where the UFO data is stored
+2. Databricks compute to run commands on Databricks
+3. An R environment with associated packages
+4. A Python environment with associated packages
 
 ### Databricks catalog
 
@@ -26,7 +26,7 @@ Specifically under `demos` > `nuforc` > `nuforc_reports`.
 
 When creating a Databricks compute cluster,
 make sure to select the `ML Runtime` option and version `14.1`.
-You can also get the `cluster_id` from the URL of the cluster or from the JSON view of the
+Be sure to [note the cluster ID](https://docs.databricks.com/en/workspace/workspace-details.html#cluster-url-and-id), which can be retrieved from the URL of the cluster or from the JSON view of the
 compute cluster configuration.
 The `cluster_id` will be saved and used to connect to the cluster,
 and install all the relevant packages.
@@ -36,7 +36,7 @@ but the matching python package needs to be published on PyPI first: <https://py
 
 ### R environemnt set up
 
-Create a project-level `.Renviorn` and define the following 3 variables:
+Create a project-level `.Renviron` and define the following 3 variables:
 
 ```
 DATABRICKS_CLUSTER_ID="databricks-cluster-id"
@@ -123,7 +123,7 @@ sc <- sparklyr::spark_connect(
 
 When this code is run in a new R session,
 the `r-sparklyr-databricks-14.1` python virtual environment will be automatically used.
-You can confirm the correct Python enviornment is loaded by running:
+You can confirm the correct Python environment is loaded by running:
 
 ```r
 reticulate::py_config()
@@ -131,9 +131,8 @@ reticulate::py_config()
 
 ## Deploy application to Connect
 
-If you are trying to deploye these applications to Connect in the RStudio IDE,
-you can use the `Publish` button to set up the Connect server.
-But the deployment needs a few more parameters that need to be passed manually.
+If you are trying to deploy these applications to Connect in the RStudio IDE,
+use the IDE `Publish` button to set up the Connect server, but refrain from publishing the app with the `Publish` button. The deployment requires a few parameters that need to be passed manually with `rsconnect::deployApp()`.
 
 In order to deploy either the Shiny application or Quarto document,
 you need use the `rsconnect::deployApp()` function and
