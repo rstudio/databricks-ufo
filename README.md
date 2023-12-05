@@ -1,25 +1,42 @@
 # DataBricks UFO Quarto Dashboard and Shiny App
 
-This is a Shiny app that allows you to explore the [National UFO Reporting Center](http://www.nuforc.org/) database
-that is hosted on a [Databricks](https://databricks.com/) cluster.
-The app is deployed via [Posit Connect](https://posit.co/products/enterprise/connect/).
-
+This repository houses is a
+[Quarto Dashboard](https://quarto.org/docs/dashboards/)
+and
+[Shiny Application](https://shiny.posit.co/)
+deployed on [Posit Connect](https://posit.co/products/enterprise/connect/)
+that allows you to explore the [National UFO Reporting Center](http://www.nuforc.org/) database
+hosted on a [Databricks](https://databricks.com/) cluster.
 
 ## Installation / Setup
 
-### Databricks Setup
+There are 4 main parts to getting everything set up:
 
-- When creating a DataBricks compute cluster, make sure to select the `ML Runtime` option
-and version `14.1`.
-  - Later versions can be supposed, but the matching python package
-needs to be published on PyPI first: <https://pypi.org/project/databricks-connect/>
-- The runtime and version will be automatically picked up by the `pysparklyr` package,
-  when you specify the `cluster_id` in the `install_databricks()` function.
+1. Databricks catalog: where the UFO data is stored
+2. Databricks compute: Using Databricks runtime version 14.1 ML
+3. R environment and package set up
+4. Python environment and package set up
 
-### Environment variables with `.Renviron`
+### Databricks catalog
 
-In a project `.Renviorn` or system `.Renviron` file,
-define the following 3 variables:
+In this example, the UFO data is stored in a Databricks catalog table.
+Specifically under `demos` > `nuforc` > `nuforc_reports`.
+
+### Databricks compute
+
+When creating a Databricks compute cluster,
+make sure to select the `ML Runtime` option and version `14.1`.
+You can also get the `cluster_id` from the URL of the cluster or from the JSON view of the
+compute cluster configuration.
+The `cluster_id` will be saved and used to connect to the cluster,
+and install all the relevant packages.
+
+Note: later versions can be supposed,
+but the matching python package needs to be published on PyPI first: <https://pypi.org/project/databricks-connect/>
+
+### R environemnt set up
+
+Create a project-level `.Renviorn` and define the following 3 variables:
 
 ```
 DATABRICKS_CLUSTER_ID="databricks-cluster-id"
@@ -27,13 +44,18 @@ DATABRICKS_HOST=rstudio-partner-posit-default.cloud.databricks.com
 DATABRICKS_TOKEN="Databricks-api-token"
 ```
 
-the `DATABRICKS_HOST` and `DATABRICKS_TOKEN` are variable that may be implicitly in your connection code.
-The `DATABRICKS_CLUSTER_ID` is set if you have multiple people collaborating on the codebase with separate
-cluster IDs.
+The `DATABRICKS_HOST` and `DATABRICKS_TOKEN` are variables that can be implicitly used
+by the `pysparklyr` package to connect to the Databricks cluster.
 
-### Package Setup
+The `DATABRICKS_CLUSTER_ID` is useful if you have multiple collaborators on the code repository
+where each person has their own Databricks cluster.
+This makes version control easier as each person can have their own cluster and
+the code will automatically connect to the correct cluster
+without having to make modifications to the code.
 
-You can install all the necessary packages with the following commands.
+### R package set up
+
+You can install all the necessary packages with the following commands:
 
 ```r
 remotes::install_github("mlverse/pysparklyr")
@@ -43,55 +65,104 @@ pysparklyr::install_databricks(cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"))
 #### Package Setup ARM Macs
 
 If you are using an ARM mac,
-you need to make sure Python `3.11.x` is installed on your system and point to that version before installing
-`pysparklyr::install_databricks()`.
-This is because the python `torch` package is not compatiable on ARM Macs in any other Python version (at time of writing).
+you need to make sure Python `3.11.x` is installed on your system first.
+At the time of writing, Python `3.11` is the only version that is compatiable with Python's `torch` package
+on ARM Macs.
 
-Install Python `3.11.5` via `pyenv`:
+For example, you can install Python `3.11.5` via `pyenv`:
 
 ```bash
 pyenv install 3.11.5
 ```
 
-You can then install `pysparklyr`.
+You can then install `pysparklyr` and specify the python version when installing the Databricks dependencies.
 
 ```r
-pysparklyr::install_databricks(cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"), as_job = FALSE, python_version = "3.11.5")
+remotes::install_github("mlverse/pysparklyr")
+
+pysparklyr::install_databricks(
+  cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"),
+  python_version = "3.11.5"
+)
 ```
 
-You should see:
+#### Confirming your install
+
+During the installation process you should see the following output at the very top of the console:
 
 ```
 Automatically naming the environment:'r-sparklyr-databricks-14.1'
 ```
 
-and
+This is the name of the virtual environment that will be created and used by `pysparklyr`.
+The version appended to the end of the name should match the runtime version you selected in your
+Databricks compute cluster.
+
+If you are on an ARM Mac, you should also confirm that the installation is using the correct Python version.
+Below is the snippet of output that shows Python 3.11.5 being used to create the virtual environment.
 
 ```
 + ~/.pyenv/versions/3.11.5/bin/python3.11 -m venv ~/.virtualenvs/r-sparklyr-databricks-14.1
 ```
 
-In your install output.
+If the wrong Python version is being used,
+try restarting your R session and trying again,
+as `{reticulate}` can only register 1 python version per R session,
+and it cannot be changed.
 
+The apps in this repository use the following code to make the connection to the Databricks catalog:
+
+```r
+sc <- sparklyr::spark_connect(
+  master = Sys.getenv("DATABRICKS_HOST"),
+  cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"),
+  token = Sys.getenv("DATABRICKS_TOKEN"),
+  method = "databricks_connect"
+)
+```
+
+When this code is run in a new R session,
+the `r-sparklyr-databricks-14.1` python virtual environment will be automatically used.
+You can confirm the correct Python enviornment is loaded by running:
+
+```r
+reticulate::py_config()
+```
 
 ## Deploy application to Connect
 
+If you are trying to deploye these applications to Connect in the RStudio IDE,
+you can use the `Publish` button to set up the Connect server.
+But the deployment needs a few more parameters that need to be passed manually.
+
+In order to deploy either the Shiny application or Quarto document,
+you need use the `rsconnect::deployApp()` function and
+pass the path to the python binary into the `python` parameter.
+This makes sure that the correct Python environment is used when deploying the application,
+and Connect can find the correct packages.
+
+We also need to pass in the environment variables that are used to connect to the Databricks cluster.
+
+When running the below commands,
+make sure the current working directory is the root of this repository,
+and not within any of the subdirectories.
+
 ```r
 rsconnect::deployApp(
+  appName = "ufo-shiny",
+  appTitle = "UFO Report Explorer",
   appDir = here::here("ufo-shiny"),
-  # set the python path (you need to change this value yourself
-  python = "/Users/danielchen/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
-  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID"),
-  lint = FALSE
+  python = "~/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
+  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID")
 )
 ```
 
 ```r
 rsconnect::deployApp(
+  appName = "ufo-dashboard",
+  appTitle = "Reported UFO sightings",
   appDir = here::here("ufo-dashboard"),
-  # set the python path (you need to change this value yourself
-  python = "/Users/danielchen/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
-  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID"),
-  lint = FALSE
+  python = "~/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
+  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID")
 )
 ```
