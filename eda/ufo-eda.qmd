@@ -20,17 +20,37 @@ theme_set(theme_bw())
 
 We can connect to Databricks using either `sparklyr` or `odbc`:
 
-```{r connection}
+```{r sparklyr-connection}
 # Replace cluster_id with the appropriate value for your Databricks workspace
 sc <- spark_connect(
-    cluster_id = "0907-051241-shqxcbmx",
+    cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"),
     method = "databricks_connect"
 )
 
-# Replace HTTPPath with the appropriate value for your Databricks workspace
+```
+
+```{r odbc-connection}
+# Without the new odbc::databricks() function
+con <- dbConnect(
+  odbc::odbc(),
+  driver = "databricks",
+  Host = Sys.getenv("DATABRICKS_HOST"),
+  Port = 443,
+  HTTPPath = Sys.getenv("DATABRICKS_HTTP_PATH"),
+  Catalog = "samples",
+  SSL = 1,
+  ThriftTransport = 2,
+  AuthMech = 3,
+  UID = "token",
+  PWD = Sys.getenv("DATABRICKS_TOKEN")
+)
+
+dbDisconnect(con)
+
+# With the new odbc::databricks() function
 con <- dbConnect(
   odbc::databricks(),
-  HTTPPath  = "sql/protocolv1/o/4425955464597947/0907-051241-shqxcbmx",
+  HTTPPath  = Sys.getenv("DATABRICKS_HTTP_PATH"),
   timeout   = 10
 )
 ```
@@ -112,3 +132,10 @@ head(nuforc) |>
       labs(x = "State", y = "UFO Sightings", title = "UFO Sightings by State (USA)") +
       coord_flip()
     ```
+
+## Close Connections
+
+```{r}
+dbDisconnect(con)
+spark_disconnect(sc)
+```
