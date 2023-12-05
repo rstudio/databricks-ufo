@@ -5,9 +5,8 @@ rsconnect::deployApp(
   appTitle = "UFO Report Explorer",
   appDir = here::here("ufo-shiny"),
   # set the python path (you need to change this value yourself
-  python = "/Users/danielchen/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
-  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID"),
-  lint = FALSE
+  python = "~/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
+  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID")
 )
 
 rsconnect::deployApp(
@@ -15,7 +14,6 @@ rsconnect::deployApp(
   appTitle = "Reported UFO sightings",
   appDir = here::here("ufo-dashboard"),
   # set the python path (you need to change this value yourself
-  python = "/Users/danielchen/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
-  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID"),
-  lint = FALSE
+  python = "~/.virtualenvs/r-sparklyr-databricks-14.1/bin/python",
+  envVars = c("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_CLUSTER_ID")
 )
