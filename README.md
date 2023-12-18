@@ -53,85 +53,14 @@ This makes version control easier as each person can have their own cluster and
 the code will automatically connect to the correct cluster
 without having to make modifications to the code.
 
-### R package set up
+### Package Setup
 
-You can install all the necessary packages with the following commands:
-
-```r
-remotes::install_github("mlverse/pysparklyr")
-pysparklyr::install_databricks(cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"))
-```
-
-#### Package Setup ARM Macs
-
-If you are using an ARM mac,
-you need to make sure Python `3.11.x` is installed on your system first.
-At the time of writing, Python `3.11` is the only version that is compatiable with Python's `torch` package
-on ARM Macs.
-
-For example, you can install Python `3.11.5` via `pyenv`:
-
-```bash
-pyenv install 3.11.5
-```
-
-You can then install `pysparklyr` and specify the python version when installing the Databricks dependencies.
-
-```r
-remotes::install_github("mlverse/pysparklyr")
-
-pysparklyr::install_databricks(
-  cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"),
-  python_version = "3.11.5"
-)
-```
-
-#### Confirming your install
-
-During the installation process you should see the following output at the very top of the console:
-
-```
-Automatically naming the environment:'r-sparklyr-databricks-14.1'
-```
-
-This is the name of the virtual environment that will be created and used by `pysparklyr`.
-The version appended to the end of the name should match the runtime version you selected in your
-Databricks compute cluster.
-
-If you are on an ARM Mac, you should also confirm that the installation is using the correct Python version.
-Below is the snippet of output that shows Python 3.11.5 being used to create the virtual environment.
-
-```
-+ ~/.pyenv/versions/3.11.5/bin/python3.11 -m venv ~/.virtualenvs/r-sparklyr-databricks-14.1
-```
-
-If the wrong Python version is being used,
-try restarting your R session and trying again,
-as `{reticulate}` can only register 1 python version per R session,
-and it cannot be changed.
-
-The apps in this repository use the following code to make the connection to the Databricks catalog:
-
-```r
-sc <- sparklyr::spark_connect(
-  master = Sys.getenv("DATABRICKS_HOST"),
-  cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"),
-  token = Sys.getenv("DATABRICKS_TOKEN"),
-  method = "databricks_connect"
-)
-```
-
-When this code is run in a new R session,
-the `r-sparklyr-databricks-14.1` python virtual environment will be automatically used.
-You can confirm the correct Python enviornment is loaded by running:
-
-```r
-reticulate::py_config()
-```
+The Databricks Connect page: <https://spark.rstudio.com/deployment/databricks-connect.html>
+has a good overview of how to set up the R and Python package environment.
 
 ## Deploy application to Connect
 
-If you are trying to deploye these applications to Connect in the RStudio IDE,
+If you are trying to deploy these applications to Connect in the RStudio IDE,
 you can use the `Publish` button to set up the Connect server.
 But the deployment needs a few more parameters that need to be passed manually.
 
@@ -145,7 +74,7 @@ We also need to pass in the environment variables that are used to connect to th
 
 When running the below commands,
 make sure the current working directory is the root of this repository,
-and not within any of the subdirectories.
+and not within any of the sub-directories.
 
 ```r
 rsconnect::deployApp(
