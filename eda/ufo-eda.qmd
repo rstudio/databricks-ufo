@@ -1,0 +1,114 @@
+---
+title: "UFO EDA"
+format: html
+editor: visual
+---
+
+Simple exploration of the UFO data stored on Databricks
+
+```{r setup}
+# Packages ----
+library(sparklyr)
+library(pysparklyr)
+library(tidyverse)
+library(dbplyr)
+library(DBI)
+
+# Plot themes ----
+theme_set(theme_bw())
+```
+
+We can connect to Databricks using either `sparklyr` or `odbc`:
+
+```{r connection}
+# Replace cluster_id with the appropriate value for your Databricks workspace
+sc <- spark_connect(
+    cluster_id = "0907-051241-shqxcbmx",
+    method = "databricks_connect"
+)
+
+# Replace HTTPPath with the appropriate value for your Databricks workspace
+con <- dbConnect(
+  odbc::databricks(),
+  HTTPPath  = "sql/protocolv1/o/4425955464597947/0907-051241-shqxcbmx",
+  timeout   = 10
+)
+```
+
+Once connected, we can create a reference to the `nuforc` table. Functions executed against this reference will result in queries executed on Databricks.
+
+```{r data}
+nuforc <- tbl(sc, in_catalog("demos", "nuforc", "nuforc_reports"))
+head(nuforc) |> 
+  show_query()
+```
+
+## EDA
+
+-   Frequency of sightings over time (by day)
+
+    ```{r}
+    ufo_by_day <- nuforc |> 
+      filter(!is.na(date_time)) |> 
+      count(date = as.character(as.Date(date_time))) |> 
+      collect() |> 
+      mutate(date = as.Date(date),
+             month = month(date),
+             year = year(date))
+
+    ufo_by_day |> 
+      ggplot(aes(x = month, y = n)) +
+      facet_wrap(~year) +
+      geom_col() +
+      theme(axis.text.x = element_blank(),
+            axis.text.y = element_blank()) +
+      labs(title = "UFO Sightings by Month",
+           x = "",
+           y = "")
+    ```
+
+-   Aggregate UFO sightings over time
+
+    ```{r}
+    cummulative_ufo <- nuforc |> 
+      filter(!is.na(date_time)) |> 
+      count(date = as.Date(date_time)) |> 
+      arrange(date) |> 
+      mutate(cummulative_sightings = cumsum(n),
+             date = as.character(date)) |> 
+      collect()
+
+    cummulative_ufo |> 
+      ggplot(aes(x = as.Date(date), y = cummulative_sightings)) +
+      geom_line() +
+      scale_y_continuous(labels = scales::label_comma()) + 
+      labs(x = "Date", y = "UFO Sightings", title = "Cummulative UFO Sightings")
+    ```
+
+-   How many sightings by Country?
+
+    ```{r}
+    (country_count <- nuforc |> 
+        filter(!is.na(country)) |> 
+        count(country, sort = TRUE) |> 
+        collect())
+    ```
+
+-   How many sightings by State (USA)?
+
+    ```{r}
+    (state_count <- nuforc |> 
+        filter(country == "USA", !is.na(state)) |> 
+        count(state, sort = TRUE) |> 
+        collect())
+    ```
+
+    ```{r}
+    state_count |> 
+      filter(n > 10) |> 
+      ggplot(aes(x = fct_reorder(state, n), y = n)) +
+      geom_col() +
+      scale_y_continuous(labels = scales::label_comma()) +
+      labs(x = "State", y = "UFO Sightings", title = "UFO Sightings by State (USA)") +
+      coord_flip()
+    ```
