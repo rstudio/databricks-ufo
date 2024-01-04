@@ -34,7 +34,7 @@ and install all the relevant packages.
 Note: later versions can be supposed,
 but the matching python package needs to be published on PyPI first: <https://pypi.org/project/databricks-connect/>
 
-### R environemnt set up
+### R environment set up
 
 Create a project-level `.Renviron` and define the following 3 variables:
 
@@ -60,7 +60,7 @@ has a good overview of how to set up the R and Python package environment.
 
 ## Connect to Databricks
 
-Once the enviornment variables are set up, you can connect to databricks using the `spark_connect()` function from `{sparklyr}`.
+Once the environment variables are set up, you can connect to databricks using the `spark_connect()` function from `{sparklyr}`.
 
 ```r
 library(sparklyr)
