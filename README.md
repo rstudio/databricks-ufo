@@ -71,7 +71,7 @@ sc <- spark_connect(
 )
 ```
 
-The `DATABRICKS_HOST` and `DATABRICKS_TOKEN` enviornment variables are passed in for you automatically.
+The `DATABRICKS_HOST` and `DATABRICKS_TOKEN` environment variables are passed in for you automatically.
 
 If you are working on a collborative project,
 having the Cluster ID as an environment variable (e.g., `DATABRICKS_CLUSTER_ID`) is also useful.
