@@ -18,14 +18,9 @@ library(tidytext)
 library(reticulate)
 library(DT)
 
-cluster_id <- Sys.getenv("DATABRICKS_CLUSTER_ID")
-
-sc <- 
-  spark_connect(
-    method = "databricks_connect", 
-    cluster_id = cluster_id, 
-    envname = "r-sparklyr-databricks-14.1"
-  )
+sc <- spark_connect(
+    method = "databricks_connect"
+)
 
 ufo_tbl <-
   dplyr::tbl(sc, dbplyr::in_catalog("demos", "nuforc", "nuforc_reports"))

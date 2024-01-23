@@ -18,8 +18,9 @@ options(digits = 22)
 
 ## Read data from databricks -----
 
-sc <- sparklyr::spark_connect(
-  method = "databricks_connect"
+sc <- spark_connect(
+  method = "databricks_connect",
+  silent = TRUE
 )
 
 print(reticulate::py_config())
