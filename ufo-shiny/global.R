@@ -18,11 +18,9 @@ options(digits = 22)
 
 ## Read data from databricks -----
 
-sc <- sparklyr::spark_connect(
-  master = Sys.getenv("DATABRICKS_HOST"),
-  cluster_id = Sys.getenv("DATABRICKS_CLUSTER_ID"),
-  token = Sys.getenv("DATABRICKS_TOKEN"),
-  method = "databricks_connect"
+sc <- spark_connect(
+  method = "databricks_connect",
+  silent = TRUE
 )
 
 print(reticulate::py_config())
@@ -62,7 +60,21 @@ state_abb <-
   tibble(state = state.name,
          abb = state.abb)
 
-alien_related_words <- c("martian", "alien", "aliens", "extra-terrestrial", "creature", "intelligent", "being", "visitation", "abduction", "man", "figure", "abducted")
+alien_related_words <-
+  c(
+    "martian",
+    "alien",
+    "aliens",
+    "extra-terrestrial",
+    "creature",
+    "intelligent",
+    "being",
+    "visitation",
+    "abduction",
+    "man",
+    "figure",
+    "abducted"
+  )
 
 clean_time <- function(string) {
   if (is.na(string) || nchar(string) > 15) return("-")
